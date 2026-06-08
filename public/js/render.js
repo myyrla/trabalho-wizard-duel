@@ -1,5 +1,4 @@
 const FALLBACK_IMAGE = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/300px-No_image-available.svg.png';
-const PLAYER_DECK_SIZE = 2;
 
 const HOUSE_COLORS = {
   Gryffindor: '#6b1010',
