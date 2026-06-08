@@ -6,7 +6,7 @@ const { DRAFT_PACK_CARDS } = require('../constants')
 const router = express.Router()
 
 function filterValidCharacters(rawCharacters) {
-  return rawCharacters.filter(function(character) {
+  return rawCharacters.filter((character) => {
     const { name, image } = character.attributes
     return name && name !== '' && image
   })
@@ -20,8 +20,8 @@ router.get('/pack', async (req, res) => {
     const shuffledCards   = shuffleArray(characterCards)
 
     res.json({ cards: shuffledCards.slice(0, DRAFT_PACK_CARDS) })
-  } catch(error) {
-    console.log(error)
+  } catch (error) {
+    console.error(error)
     res.status(500).json({ error: 'erro ao buscar personagens' })
   }
 })

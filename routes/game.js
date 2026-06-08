@@ -6,7 +6,7 @@ const { CPU_DECK_SIZE } = require('../constants')
 const router = express.Router()
 
 function filterValidCharacters(rawCharacters) {
-  return rawCharacters.filter(function(character) {
+  return rawCharacters.filter((character) => {
     const { name, image } = character.attributes
     return name && name !== '' && image
   })
@@ -20,8 +20,8 @@ router.post('/cpu-deck', async (req, res) => {
     const shuffledCards   = shuffleArray(characterCards)
 
     res.json({ deck: shuffledCards.slice(0, CPU_DECK_SIZE) })
-  } catch(error) {
-    console.log(error)
+  } catch (error) {
+    console.error(error)
     res.status(500).json({ error: 'erro ao montar deck cpu' })
   }
 })
