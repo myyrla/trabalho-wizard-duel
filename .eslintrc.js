@@ -32,6 +32,7 @@ module.exports = {
         castSpell: 'writable',
         nextRound: 'writable',
         restartGame: 'writable',
+        PLAYER_DECK_SIZE: 'readonly',
       },
       rules: {
         'no-use-before-define': 'off',
