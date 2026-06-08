@@ -1,33 +1,47 @@
-var FALLBACK_IMAGE = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/300px-No_image_available.svg.png'
+const FALLBACK_IMAGE = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/300px-No_image-available.svg.png';
+
+const HOUSE_COLORS = {
+  Gryffindor: '#6b1010',
+  Slytherin: '#0a3018',
+  Hufflepuff: '#3a2800',
+  Ravenclaw: '#0a1a3a',
+  default: '#1e1040',
+};
+
+const HOUSE_EMOJIS = {
+  Gryffindor: '🦁',
+  Slytherin: '🐍',
+  Hufflepuff: '🦡',
+  Ravenclaw: '🦅',
+  default: '✦',
+};
+
+const HP_COLOR_HIGH = 'linear-gradient(90deg,#0a4a2a,#22cc77)';
+const HP_COLOR_MID = 'linear-gradient(90deg,#4a3a00,#ccaa22)';
+const HP_COLOR_LOW = 'linear-gradient(90deg,#4a0a0a,#cc2222)';
+const HP_THRESHOLD_HIGH = 0.6;
+const HP_THRESHOLD_MID = 0.3;
 
 function getHouseColor(house) {
-  if (house == 'Gryffindor') return '#6b1010'
-  if (house == 'Slytherin')  return '#0a3018'
-  if (house == 'Hufflepuff') return '#3a2800'
-  if (house == 'Ravenclaw')  return '#0a1a3a'
-  return '#1e1040'
+  return HOUSE_COLORS[house] || HOUSE_COLORS.default;
 }
 
 function getHouseEmoji(house) {
-  if (house == 'Gryffindor') return '🦁'
-  if (house == 'Slytherin')  return '🐍'
-  if (house == 'Hufflepuff') return '🦡'
-  if (house == 'Ravenclaw')  return '🦅'
-  return '✦'
+  return HOUSE_EMOJIS[house] || HOUSE_EMOJIS.default;
 }
 
 function hpColor(hpPercent) {
-  if (hpPercent > 0.6) return 'linear-gradient(90deg,#0a4a2a,#22cc77)'
-  if (hpPercent > 0.3) return 'linear-gradient(90deg,#4a3a00,#ccaa22)'
-  return 'linear-gradient(90deg,#4a0a0a,#cc2222)'
+  if (hpPercent > HP_THRESHOLD_HIGH) return HP_COLOR_HIGH;
+  if (hpPercent > HP_THRESHOLD_MID) return HP_COLOR_MID;
+  return HP_COLOR_LOW;
 }
 
 function renderCard(char) {
-  var hpPercent  = char.hp / char.maxHp
-  var houseColor = getHouseColor(char.house)
-  var houseEmoji = getHouseEmoji(char.house)
-  var hpWidth    = Math.max(0, hpPercent * 100)
-  var hpDisplay  = Math.max(0, char.hp)
+  const hpPercent = char.hp / char.maxHp;
+  const houseColor = getHouseColor(char.house);
+  const houseEmoji = getHouseEmoji(char.house);
+  const hpWidth = Math.max(0, hpPercent * 100);
+  const hpDisplay = Math.max(0, char.hp);
 
   return `
     <div class="card-img">
@@ -62,72 +76,67 @@ function renderCard(char) {
         </div>
       </div>
     </div>
-  `
+  `;
 }
 
 function renderDeckBadges(deck, activeIdx, elId) {
-  var container = document.getElementById(elId)
-  var html = ''
-  for (var i = 0; i < deck.length; i++) {
-    var cssClass = deck[i].hp <= 0 ? 'deck-thumb dead' : (i == activeIdx ? 'deck-thumb active' : 'deck-thumb')
-    html += `<div class="${cssClass}"><img src="${deck[i].image}" onerror="this.src='${FALLBACK_IMAGE}'"></div>`
-  }
-  container.innerHTML = html
+  const container = document.getElementById(elId);
+  container.innerHTML = deck.map((character, index) => {
+    let cssClass = 'deck-thumb';
+    if (character.hp <= 0) cssClass += ' dead';
+    else if (index === activeIdx) cssClass += ' active';
+    return `<div class="${cssClass}"><img src="${character.image}" onerror="this.src='${FALLBACK_IMAGE}'"></div>`;
+  }).join('');
 }
 
 function renderSpells(playerSpells, enabled) {
-  var container    = document.getElementById('spellList')
-  var disabledAttr = enabled ? '' : 'disabled'
-  var html = ''
-  for (var i = 0; i < playerSpells.length; i++) {
-    var spell      = playerSpells[i]
-    var isHeal     = spell.damage < 0
-    var dmgLabel   = isHeal ? '💚 +' + Math.abs(spell.damage) + ' HP' : '💀 ' + spell.damage + ' dmg'
-    var dmgClass   = isHeal ? 'spell-dmg heal' : 'spell-dmg attack'
-    html += `<button class="spell-btn" ${disabledAttr} onclick="castSpell(${i})">
+  const container = document.getElementById('spellList');
+  const disabledAttr = enabled ? '' : 'disabled';
+  container.innerHTML = playerSpells.map((spell, index) => {
+    const isHeal = spell.damage < 0;
+    const dmgLabel = isHeal ? `💚 +${Math.abs(spell.damage)} HP` : `💀 ${spell.damage} dmg`;
+    const dmgClass = isHeal ? 'spell-dmg heal' : 'spell-dmg attack';
+    return `<button class="spell-btn" ${disabledAttr} onclick="castSpell(${index})">
       <div>
         <span class="spell-name">${spell.name}</span>
         <span class="spell-effect">${spell.effect}</span>
       </div>
       <span class="${dmgClass}">${dmgLabel}</span>
-    </button>`
-  }
-  container.innerHTML = html
+    </button>`;
+  }).join('');
 }
 
 function renderPack(pack, selectedCards) {
-  var grid = document.getElementById('packGrid')
-  grid.innerHTML = ''
-  for (var i = 0; i < pack.length; i++) {
-    var char       = pack[i]
-    var isSelected = selectedCards.indexOf(i) >= 0
-    var cardEl     = document.createElement('div')
-    cardEl.className = 'card' + (isSelected ? ' selected' : '')
-    cardEl.innerHTML = renderCard(char)
-    cardEl.setAttribute('data-idx', i)
-    cardEl.onclick = (function(idx) { return function() { toggleDraftCard(idx) } })(i)
-    grid.appendChild(cardEl)
-  }
-  document.getElementById('draftCount').textContent = selectedCards.length
-  document.getElementById('btnConfirmDraft').disabled = selectedCards.length < 2
+  const grid = document.getElementById('packGrid');
+  grid.innerHTML = '';
+  pack.forEach((char, index) => {
+    const isSelected = selectedCards.indexOf(index) >= 0;
+    const cardEl = document.createElement('div');
+    cardEl.className = `card${isSelected ? ' selected' : ''}`;
+    cardEl.innerHTML = renderCard(char);
+    cardEl.setAttribute('data-idx', index);
+    cardEl.onclick = () => toggleDraftCard(index);
+    grid.appendChild(cardEl);
+  });
+  document.getElementById('draftCount').textContent = selectedCards.length;
+  document.getElementById('btnConfirmDraft').disabled = selectedCards.length < 2;
 }
 
-function logBattleMessage(msg, type) {
-  type = type || 'info'
-  var container = document.getElementById('battleLog')
-  var entry     = document.createElement('span')
-  entry.className = 'log-entry ' + type
-  entry.textContent = msg
-  container.appendChild(entry)
-  container.scrollTop = container.scrollHeight
+function logBattleMessage(msg, type = 'info') {
+  const container = document.getElementById('battleLog');
+  const entry = document.createElement('span');
+  entry.className = `log-entry ${type}`;
+  entry.textContent = msg;
+  container.appendChild(entry);
+  container.scrollTop = container.scrollHeight;
 }
 
 function setStatusMessage(msg) {
-  document.getElementById('battleStatus').textContent = msg
+  document.getElementById('battleStatus').textContent = msg;
 }
 
 function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(function(screen) { screen.classList.remove('active') })
-  var target = document.getElementById(id)
-  if (target) target.classList.add('active')
+  document.querySelectorAll('.screen').forEach((screen) => screen.classList.remove('active'));
+  const target = document.getElementById(id);
+  if (target) target.classList.add('active');
 }
