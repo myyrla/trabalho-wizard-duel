@@ -1,4 +1,5 @@
 const FALLBACK_IMAGE = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/300px-No_image-available.svg.png';
+const PLAYER_DECK_SIZE = 2;
 
 const HOUSE_COLORS = {
   Gryffindor: '#6b1010',
@@ -82,9 +83,10 @@ function renderCard(char) {
 function renderDeckBadges(deck, activeIdx, elId) {
   const container = document.getElementById(elId);
   container.innerHTML = deck.map((character, index) => {
-    let cssClass = 'deck-thumb';
-    if (character.hp <= 0) cssClass += ' dead';
-    else if (index === activeIdx) cssClass += ' active';
+    let modifier = '';
+    if (character.hp <= 0) modifier = ' dead';
+    else if (index === activeIdx) modifier = ' active';
+    const cssClass = `deck-thumb${modifier}`;
     return `<div class="${cssClass}"><img src="${character.image}" onerror="this.src='${FALLBACK_IMAGE}'"></div>`;
   }).join('');
 }
@@ -119,7 +121,7 @@ function renderPack(pack, selectedCards) {
     grid.appendChild(cardEl);
   });
   document.getElementById('draftCount').textContent = selectedCards.length;
-  document.getElementById('btnConfirmDraft').disabled = selectedCards.length < 2;
+  document.getElementById('btnConfirmDraft').disabled = selectedCards.length < PLAYER_DECK_SIZE;
 }
 
 function logBattleMessage(msg, type = 'info') {
@@ -133,6 +135,10 @@ function logBattleMessage(msg, type = 'info') {
 
 function setStatusMessage(msg) {
   document.getElementById('battleStatus').textContent = msg;
+}
+
+function renderLoadingMessage(message) {
+  return `<div class="loading-message">${message}</div>`;
 }
 
 function showScreen(id) {

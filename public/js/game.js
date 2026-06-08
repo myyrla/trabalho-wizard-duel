@@ -1,4 +1,8 @@
 const PLAYER_SPELL_COUNT = 5;
+const PLAYER_DECK_SIZE = 2;
+const STAT_MAX = 100;
+const DAMAGE_VARIANCE = 0.4;
+const DAMAGE_BASE = 0.8;
 const TIMEOUT_CPU_TURN = 800;
 const TIMEOUT_ROUND_END = 700;
 const TIMEOUT_LOADING_FADE = 400;
@@ -79,7 +83,7 @@ function toggleDraftCard(cardIndex) {
   if (position >= 0) {
     state.selectedCards.splice(position, 1);
   } else {
-    if (state.selectedCards.length >= 2) return;
+    if (state.selectedCards.length >= PLAYER_DECK_SIZE) return;
     state.selectedCards.push(cardIndex);
   }
   renderPack(state.pack, state.selectedCards);
@@ -87,13 +91,13 @@ function toggleDraftCard(cardIndex) {
 
 async function rerollPack() {
   state.selectedCards = [];
-  document.getElementById('packGrid').innerHTML = '<div style="text-align:center;padding:40px;font-family:Cinzel,serif;font-size:0.7rem;letter-spacing:2px;color:var(--parchment-dark);grid-column:1/-1">Invocando novos bruxos...</div>';
+  document.getElementById('packGrid').innerHTML = renderLoadingMessage('Invocando novos bruxos...');
   state.pack = await fetchPack();
   renderPack(state.pack, state.selectedCards);
 }
 
 function confirmDraft() {
-  if (state.selectedCards.length < 2) return;
+  if (state.selectedCards.length < PLAYER_DECK_SIZE) return;
   state.playerDeck = [
     state.pack[state.selectedCards[0]],
     state.pack[state.selectedCards[1]],
@@ -166,9 +170,9 @@ function castSpell(spellIndex) {
   const cpuCharacter = state.cpuDeck[cpuIndex];
 
   const playerDamage = Math.floor(
-    chosenSpell.damage * (playerCharacter.magic / 100) * (Math.random() * 0.4 + 0.8),
+    chosenSpell.damage * (playerCharacter.magic / STAT_MAX)
+  * (Math.random() * DAMAGE_VARIANCE + DAMAGE_BASE),
   );
-
   if (chosenSpell.damage < 0) {
     const healAmount = Math.abs(playerDamage);
     playerCharacter.hp = Math.min(playerCharacter.maxHp, playerCharacter.hp + healAmount);
@@ -192,9 +196,9 @@ function castSpell(spellIndex) {
     const cpuSpellIndex = Math.floor(Math.random() * state.spells.length);
     const cpuSpell = state.spells[cpuSpellIndex];
     const cpuDamage = Math.floor(
-      cpuSpell.damage * (cpuCharacter.magic / 100) * (Math.random() * 0.4 + 0.8),
+      cpuSpell.damage * (cpuCharacter.magic / STAT_MAX)
+  * (Math.random() * DAMAGE_VARIANCE + DAMAGE_BASE),
     );
-
     if (cpuSpell.damage < 0) {
       const cpuHeal = Math.abs(cpuDamage);
       cpuCharacter.hp = Math.min(cpuCharacter.maxHp, cpuCharacter.hp + cpuHeal);

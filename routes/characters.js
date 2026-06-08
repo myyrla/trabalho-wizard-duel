@@ -1,16 +1,9 @@
 const express = require('express');
 const { fetchRandomCharacterPage } = require('../services/potterApi');
-const { buildCharacterCard, shuffleArray } = require('../services/statsCalculator');
+const { buildCharacterCard, shuffleArray, filterValidCharacters } = require('../services/statsCalculator');
 const { DRAFT_PACK_CARDS } = require('../constants');
 
 const router = express.Router();
-
-function filterValidCharacters(rawCharacters) {
-  return rawCharacters.filter((character) => {
-    const { name, image } = character.attributes;
-    return name && name !== '' && image;
-  });
-}
 
 router.get('/pack', async (req, res) => {
   try {

@@ -1,16 +1,9 @@
 const express = require('express');
 const { fetchRandomCharacterPage } = require('../services/potterApi');
-const { buildCharacterCard, shuffleArray } = require('../services/statsCalculator');
+const { buildCharacterCard, shuffleArray, filterValidCharacters } = require('../services/statsCalculator');
 const { CPU_DECK_SIZE } = require('../constants');
 
 const router = express.Router();
-
-function filterValidCharacters(rawCharacters) {
-  return rawCharacters.filter((character) => {
-    const { name, image } = character.attributes;
-    return name && name !== '' && image;
-  });
-}
 
 router.post('/cpu-deck', async (req, res) => {
   try {

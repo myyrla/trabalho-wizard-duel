@@ -56,6 +56,13 @@ function buildSpellCard(rawSpell) {
   };
 }
 
+function filterValidCharacters(rawCharacters) {
+  return rawCharacters.filter((character) => {
+    const { name, image } = character.attributes;
+    return name && name !== '' && image;
+  });
+}
+
 function shuffleArray(array) {
   const shuffled = [...array];
   for (let index = shuffled.length - 1; index > 0; index -= 1) {
@@ -67,4 +74,6 @@ function shuffleArray(array) {
   return shuffled;
 }
 
-module.exports = { buildCharacterCard, buildSpellCard, shuffleArray };
+module.exports = {
+  buildCharacterCard, buildSpellCard, shuffleArray, filterValidCharacters,
+};
